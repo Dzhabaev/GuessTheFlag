@@ -17,6 +17,9 @@ struct ContentView: View {
     @State private var showingScore = false
     @State private var scoreTitle = ""
     
+    @State private var selectedFlag: Int? = nil
+    @State private var animationAmount = 0.0
+    
     
     var body: some View {
         ZStack {
@@ -45,11 +48,22 @@ struct ContentView: View {
                     
                     ForEach(0..<3) { number in
                         Button {
+                            withAnimation {
+                                selectedFlag = number
+                                animationAmount += 360
+                            }
                             flagTapped(number)
                         } label: {
                             Image(countries[number])
                                 .clipShape(.capsule)
                                 .shadow(radius: 5)
+                                .rotation3DEffect(
+                                    .degrees(selectedFlag == number ? animationAmount : 0),
+                                    axis: (x: 0, y: 1, z: 0)
+                                )
+                                .opacity(selectedFlag == nil || selectedFlag == number ? 1 : 0.25)
+                                .scaleEffect(selectedFlag == nil || selectedFlag == number ? 1 : 0.7)
+                                .animation(.easeInOut(duration: 0.6), value: selectedFlag)
                         }
                     }
                 }
@@ -105,11 +119,13 @@ struct ContentView: View {
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        selectedFlag = nil
     }
     
     func reset() {
         score = 0
         questionCount = 0
+        selectedFlag = nil
         askQuestion()
     }
 }
